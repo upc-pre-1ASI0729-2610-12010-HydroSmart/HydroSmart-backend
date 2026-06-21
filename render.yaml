@@ -1,0 +1,44 @@
+databases:
+  - name: hydrosmart-db
+    plan: free
+    databaseName: hydrosmart_db
+    user: hydrosmart_user
+
+services:
+  - type: web
+    name: hydrosmart-backend
+    runtime: docker
+    plan: free
+    branch: main
+    autoDeploy: true
+    envVars:
+      # Render conecta automáticamente estos valores con la base de datos
+      # 'hydrosmart-db' definida arriba — no hay que copiar/pegar nada a mano.
+      - key: DB_HOST
+        fromDatabase:
+          name: hydrosmart-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: hydrosmart-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: hydrosmart-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: hydrosmart-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: hydrosmart-db
+          property: password
+
+      # Render genera un valor aleatorio y seguro automáticamente
+      - key: JWT_SECRET
+        generateValue: true
+
+      # Actualiza esto manualmente en el dashboard cuando despliegues el frontend
+      - key: FRONTEND_URL
+        value: http://localhost:4200
