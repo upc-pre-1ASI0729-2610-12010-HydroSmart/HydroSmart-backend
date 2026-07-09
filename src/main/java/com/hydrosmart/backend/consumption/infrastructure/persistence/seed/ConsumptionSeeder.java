@@ -113,7 +113,7 @@ public class ConsumptionSeeder implements ApplicationRunner {
 
         for (int si = 0; si < activeSensors.length; si++) {
             double dailyAvg = totals[si] / 30.0;
-            for (int day = 1; day <= daysInMonth; day++) {
+            for (int day = 1; day <= today.getDayOfMonth(); day++) {
                 double liters = dailyAvg + (day % 3 == 0 ? dailyAvg * 0.1 : (day % 3 == 1 ? -dailyAvg * 0.05 : 0));
                 readings.add(ConsumptionReadingJpaEntity.builder()
                         .sensor(activeSensors[si])

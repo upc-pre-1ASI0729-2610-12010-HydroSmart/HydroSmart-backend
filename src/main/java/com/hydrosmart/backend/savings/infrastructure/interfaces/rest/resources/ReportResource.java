@@ -6,6 +6,7 @@ public record ReportResource(
         Double totalVolume,
         Double averageDailyVolume,
         String peakDay,
+        Double peakDayVolume,
         Double estimatedCost,
         List<DeviceRankingResource> deviceRanking,
         List<WeeklyAverageResource> weeklyAverages

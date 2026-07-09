@@ -30,10 +30,16 @@ public class SavingsCommandService {
 
     public ReportResource getMonthlyReport(Long buildingId, String period) {
         YearMonth ym = YearMonth.parse(period);
-        LocalDate from = ym.atDay(1);
-        LocalDate to = ym.atEndOfMonth();
+        return buildReportFromSensors(sensorRepository.findByBuildingId(buildingId), ym.atDay(1), ym.atEndOfMonth());
+    }
 
-        List<Sensor> sensors = sensorRepository.findByBuildingId(buildingId);
+    /** Reporte mensual de una unidad (tenant-safe). */
+    public ReportResource getMonthlyReportForUnit(Long unitId, String period) {
+        YearMonth ym = YearMonth.parse(period);
+        return buildReportFromSensors(sensorRepository.findByUnitId(unitId), ym.atDay(1), ym.atEndOfMonth());
+    }
+
+    private ReportResource buildReportFromSensors(List<Sensor> sensors, LocalDate from, LocalDate to) {
         List<Long> sensorIds = sensors.stream().map(Sensor::getId).collect(Collectors.toList());
 
         Instant fromI = from.atStartOfDay(ZoneOffset.UTC).toInstant();
@@ -55,6 +61,10 @@ public class SavingsCommandService {
                 .max(Map.Entry.comparingByValue())
                 .map(e -> e.getKey().toString())
                 .orElse(null);
+        double peakDayVolume = byDay.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getValue)
+                .orElse(0.0);
 
         double estimatedCost = total * 0.005;
 
@@ -94,6 +104,6 @@ public class SavingsCommandService {
             weekNum++;
         }
 
-        return new ReportResource(total, avgDaily, peakDay, estimatedCost, ranking, weeklyAvgs);
+        return new ReportResource(total, avgDaily, peakDay, peakDayVolume, estimatedCost, ranking, weeklyAvgs);
     }
 }
