@@ -38,7 +38,16 @@ public class IncidentSeeder implements ApplicationRunner {
     @Transactional
     public void run(ApplicationArguments args) {
         if (alertRepository.count() > 0) {
-            log.info("[Incident] Alerts already seeded, skipping.");
+            // Para el demo: reactivar todas las alertas a 'active' en cada arranque,
+            // de modo que siempre haya alertas visibles incluso tras resolverlas.
+            log.info("[Incident] Alerts already exist. Reactivating all to 'active'.");
+            var existing = alertRepository.findAll();
+            existing.forEach(a -> {
+                a.setStatus("active");
+                a.setAcknowledgedAt(null);
+                a.setResolvedAt(null);
+            });
+            alertRepository.saveAll(existing);
             return;
         }
         log.info("[Incident] Seeding alerts...");

@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Secretos locales (API keys de servicios externos) ###
+# Este archivo contiene las API keys reales de Resend y OpenWeather.
+# NUNCA se debe subir al repositorio. Spring Boot lo carga mediante
+# spring.config.import=optional:file:./local-secrets.properties
+local-secrets.properties

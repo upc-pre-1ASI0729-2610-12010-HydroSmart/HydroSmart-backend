@@ -73,7 +73,9 @@ public class PropertyController {
         Unit unit = propertyCommandService.getUnit(id);
         boolean isAdmin = userDetails.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_BUILDING_ADMIN"));
-        if (!isAdmin && unit.getTenantUserId() == null) {
+        Long currentUserId = propertyCommandService.getUserIdByEmail(userDetails.getUsername()).orElse(null);
+        // Un tenant solo puede ver el resumen de SU unidad
+        if (!isAdmin && (unit.getTenantUserId() == null || !unit.getTenantUserId().equals(currentUserId))) {
             return ResponseEntity.status(403).body(ApiResponse.error("Acceso denegado"));
         }
 
@@ -82,6 +84,16 @@ public class PropertyController {
         LocalDate from = now.withDayOfMonth(1);
         LocalDate to = now.withDayOfMonth(now.lengthOfMonth());
         return ResponseEntity.ok(ApiResponse.ok(consumptionCommandService.buildSummary(sensors, from, to)));
+    }
+
+    /** Endpoint tenant-safe: devuelve la unidad del usuario autenticado. */
+    @GetMapping("/units/me")
+    public ResponseEntity<ApiResponse<UnitResource>> getMyUnit(@AuthenticationPrincipal UserDetails userDetails) {
+        return propertyCommandService.getUnitForTenantEmail(userDetails.getUsername())
+                .map(u -> ResponseEntity.ok(ApiResponse.ok(
+                        UnitResourceAssembler.toResource(u, propertyCommandService.resolveTenantName(u.getTenantUserId())))))
+                .orElseGet(() -> ResponseEntity.status(404)
+                        .body(ApiResponse.error("No tienes una unidad asignada")));
     }
 
     @GetMapping("/units/{id}/tenant")

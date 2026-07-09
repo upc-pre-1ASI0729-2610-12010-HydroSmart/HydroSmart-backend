@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -55,6 +56,17 @@ public class PropertyCommandService {
         return userRepository.findById(tenantUserId)
                 .map(User::fullName)
                 .orElse("");
+    }
+
+    /** Resuelve la unidad asignada a un tenant a partir de su email (tenant-safe). */
+    public Optional<Unit> getUnitForTenantEmail(String email) {
+        return userRepository.findByEmail(new Email(email))
+                .flatMap(u -> unitRepository.findByTenantUserId(u.getId()));
+    }
+
+    /** Devuelve el id de usuario a partir de su email. */
+    public Optional<Long> getUserIdByEmail(String email) {
+        return userRepository.findByEmail(new Email(email)).map(User::getId);
     }
 
     @Transactional

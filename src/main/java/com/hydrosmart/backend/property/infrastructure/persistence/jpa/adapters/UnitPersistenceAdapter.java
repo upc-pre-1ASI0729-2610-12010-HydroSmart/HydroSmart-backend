@@ -32,6 +32,11 @@ public class UnitPersistenceAdapter implements UnitDomainRepository {
     }
 
     @Override
+    public Optional<Unit> findByTenantUserId(Long tenantUserId) {
+        return jpaRepository.findByTenantUserId(tenantUserId).map(UnitPersistenceMapper::toDomain);
+    }
+
+    @Override
     public Unit save(Unit unit) {
         return UnitPersistenceMapper.toDomain(
                 jpaRepository.save(UnitPersistenceMapper.toJpaEntity(unit, buildingJpaRepository)));
